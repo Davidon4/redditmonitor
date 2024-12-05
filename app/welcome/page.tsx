@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import { useSubredditStore } from '@/lib/store/subreddit';
-import debounce from "lodash/debounce";
 
 interface Subreddit {
   id: string;
@@ -33,13 +32,6 @@ export default function WelcomePage() {
   })
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
-
-  const debouncedSearch = useCallback(
-    debounce((searchTerm: string) => {
-      handleSearch(searchTerm)
-    }, 500),
-    []
-  )
 
   const handleSearch = async (searchTerm?: string) => {
     if (!searchTerm?.trim() && !keyword.trim()) return;

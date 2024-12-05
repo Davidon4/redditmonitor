@@ -9,14 +9,6 @@ import {cn, formatNumber} from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useSubredditStore } from "@/lib/store/subreddit";
 
-  interface UserSubreddit {
-    subreddit: {
-      name: string;
-      description: string;
-      subscribers: number;
-    }
-  }
-
   interface TopPost {
     title: string;
     score: number;
@@ -42,22 +34,11 @@ import { useSubredditStore } from "@/lib/store/subreddit";
   const [selectedPost, setSelectedPost] = useState<TopPost | null>(null);
   const [postAnalysis, setPostAnalysis] = useState<PostAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [chartWidth, setChartWidth] = useState(1000);
   const [isListOpen, setIsListOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { setAvailableSubreddits, setCurrentSubreddit, currentSubreddit } = useSubredditStore();
   const { data: session } = useSession();
-
-  useEffect(() => {
-    const handleResize = () => {
-      setChartWidth(window.innerWidth < 1280 ? window.innerWidth - 120 : 1000);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const analyzePost = async (post: TopPost) => {
     setIsAnalyzing(true);
