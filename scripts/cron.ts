@@ -1,18 +1,11 @@
-const cron = require('node-cron');
-const { prismadb } = require('../lib/prismadb');
-const reddit = require('../lib/reddit');
+import cron from 'node-cron';
+import prismadb from '../lib/prismadb';
+import reddit from '../lib/reddit';
 
 interface SubredditData {
   subreddit: {
     name: string;
   }
-}
-
-interface RedditMetrics {
-  activeUsers: number;
-  subscribers: number;
-  commentCounts: number;
-  upvotes: number;
 }
 
 async function startCronJob() {
