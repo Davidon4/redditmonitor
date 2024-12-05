@@ -14,7 +14,7 @@ async function startCronJob() {
   try {
     await cleanupOldMetrics();
     
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule('*/10 * * * *', async () => {
       const now = new Date();
       console.log('Running metrics update at:', now.toISOString());
       
