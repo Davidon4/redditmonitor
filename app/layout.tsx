@@ -12,22 +12,16 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Reddimon - Monitor Subreddits",
+  title: {
+    template: '%s - Reddimon',
+    default: 'Reddimon',
+  },
   description: "Reddimon is a tool that allows you to monitor subreddits and get insights into their activity.",
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
 };
-
-// export const metadata: Metadata = {
-//   title: {
-//     template: '%s - Reddimon',
-//     default: 'Reddimon',
-//   },
-//   description: "Reddimon is a tool that allows you to monitor subreddits and get insights into their activity.",
-//   icons: {
-//     icon: '/favicon.ico', // Your favicon
-//     apple: '/apple-icon.png', // Optional: Apple touch icon
-//     shortcut: '/shortcut-icon.png' // Optional: Shortcut icon
-//   },
-// };
 
 export default async function RootLayout({
   children,

@@ -2,10 +2,20 @@ const cron = require('node-cron');
 const prismadb = require('../lib/prismadb').default;
 const reddit = require('../lib/reddit').default;
 
-interface SubredditData {
-  subreddit: {
-    name: string;
-  }
+interface PostActivity {
+  postId: string;
+  upvoteChange: number;
+  commentChange: number;
+  totalUpvotes: number;
+  totalComments: number;
+  age: string;
+}
+
+interface SubredditActivity {
+  totalNewUpvotes: number;
+  totalNewComments: number;
+  activePostsCount: number;
+  details: PostActivity[];
 }
 
 async function startCronJob() {
@@ -24,27 +34,25 @@ async function startCronJob() {
           distinct: ['subredditId']
         });
         
-        console.log(`Processing ${subreddits.length} subreddits`);
-        
-        await Promise.allSettled(
-          subreddits.map(async (sub: SubredditData) => {
-            try {
-              const metrics = await reddit.getSubredditInfo(sub.subreddit.name, now);
-              await prismadb.subredditMetrics.create({
-                data: {
-                  subreddit: sub.subreddit.name,
-                  activeUsers: metrics.activeUsers,
-                  subscribers: metrics.subscribers,
-                  commentCounts: metrics.commentCounts,
-                  upvotes: metrics.upvotes,
-                  timestamp: now
-                }
-              });
-            } catch (error) {
-              console.error(`Failed to process ${sub.subreddit.name}:`, error);
-            }
-          })
-        );
+        for (const sub of subreddits) {
+          try {
+            const activity: SubredditActivity = await reddit.getSubredditActivity(sub.subreddit.name);
+            await prismadb.subredditMetrics.create({
+              data: {
+                subreddit: sub.subreddit.name,
+                activeUsers: activity.activePostsCount,
+                upvotes: activity.totalNewUpvotes,
+                commentCounts: activity.totalNewComments,
+                timestamp: now,
+                postDetails: activity.details
+              }
+            });
+            
+            console.log(`Processed activity for r/${sub.subreddit.name}:`, activity);
+          } catch (error) {
+            console.error(`Failed to process ${sub.subreddit.name}:`, error);
+          }
+        }
       } catch (error) {
         console.error('Cron job execution error:', error);
       }

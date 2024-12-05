@@ -49,6 +49,7 @@ model SubredditMetrics {
   commentCounts           Int      @default(0)
   upvotes                 Int      @default(0) 
   timestamp               DateTime
+  postDetails             Json?
 
   @@index([timestamp(sort: Desc), subreddit])
   @@unique([subreddit, timestamp])

@@ -3,6 +3,7 @@ import { Menu, X, Bot } from 'lucide-react';
 import {signIn} from "next-auth/react";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Logo from '../Logo';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,11 +35,7 @@ const Header = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 bg-purple-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">
-              <Bot className="w-5 h-5" />
-              </span>
-            </div>
+            <Logo />
             <span className="text-xl font-bold bg-purple-700 bg-clip-text text-transparent">
               Reddimon
             </span>
