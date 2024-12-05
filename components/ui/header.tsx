@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Bot } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import {signIn} from "next-auth/react";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
