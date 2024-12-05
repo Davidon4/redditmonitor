@@ -50,6 +50,6 @@ model SubredditMetrics {
   upvotes                 Int      @default(0) 
   timestamp               DateTime
 
-  @@index([timestamp], map: "timestamp_ttl") 
+  @@index([timestamp(sort: Desc), subreddit])
   @@unique([subreddit, timestamp])
 }

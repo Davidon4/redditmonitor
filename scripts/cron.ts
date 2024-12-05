@@ -2,39 +2,67 @@ import cron from 'node-cron';
 import prismadb from '@/lib/prismadb';
 import reddit from '@/lib/reddit';
 
-// Run every 5 minutes
 export async function startCronJob() {
   console.log('Starting cron job...');
   
-  // Add this cleanup call before starting the cron job
-  await reddit.cleanupFutureMetrics();
-  
-  cron.schedule('*/5 * * * *', async () => {
-    const now = new Date();
-    console.log('Running cron job at:', now.toISOString());
+  try {
+    // Cleanup old metrics before starting
+    await cleanupOldMetrics();
     
-    try {
-      const subreddits = await prismadb.userSubreddit.findMany({
+    cron.schedule('*/5 * * * *', async () => {
+      const now = new Date();
+      console.log('Running metrics update at:', now.toISOString());
+      
+      try {
+        const subreddits = await prismadb.userSubreddit.findMany({
           select: { subreddit: true },
           distinct: ['subredditId']
-      });
-      
-      console.log(`Found ${subreddits.length} subreddits to track`);
-      
-      for (const sub of subreddits) {
-          try {
+        });
+        
+        console.log(`Processing ${subreddits.length} subreddits`);
+        
+        await Promise.allSettled(
+          subreddits.map(async (sub) => {
+            try {
               const metrics = await reddit.getSubredditInfo(sub.subreddit.name, now);
-              await reddit.storeSubredditMetrics(sub.subreddit.name, {
-                  ...metrics,
-                  timestamp: now  // Pass the same timestamp
+              await prismadb.subredditMetrics.create({
+                data: {
+                  subreddit: sub.subreddit.name,
+                  activeUsers: metrics.activeUsers,
+                  subscribers: metrics.subscribers,
+                  commentCounts: metrics.commentCounts,
+                  upvotes: metrics.upvotes,
+                  timestamp: now
+                }
               });
-          } catch (error) {
-              console.error(`Failed to process subreddit ${sub.subreddit.name}:`, error);
-          }
+            } catch (error) {
+              console.error(`Failed to process ${sub.subreddit.name}:`, error);
+            }
+          })
+        );
+      } catch (error) {
+        console.error('Cron job execution error:', error);
       }
+    });
   } catch (error) {
-      console.error('Cron job error:', error);
+    console.error('Failed to start cron job:', error);
   }
-});
-console.log('Cron job scheduled');
+}
+
+async function cleanupOldMetrics() {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  try {
+    await prismadb.subredditMetrics.deleteMany({
+      where: {
+        timestamp: {
+          lt: thirtyDaysAgo
+        }
+      }
+    });
+    console.log('Cleaned up old metrics');
+  } catch (error) {
+    console.error('Failed to cleanup old metrics:', error);
+  }
 }
