@@ -16,14 +16,14 @@ interface UserSubreddit {
   }
 }
 
-interface SubredditState {
-  currentSubreddit: string | null;
-  setCurrentSubreddit: (subreddit: string) => void;
+interface SubredditStore {
   availableSubreddits: UserSubreddit[];
+  currentSubreddit: string | null;
   setAvailableSubreddits: (subreddits: UserSubreddit[]) => void;
+  setCurrentSubreddit: (subreddit: string) => void;
 }
 
-export const useSubredditStore = create<SubredditState>()(
+export const useSubredditStore = create<SubredditStore>()(
   persist(
     (set) => ({
       currentSubreddit: null,
@@ -31,12 +31,16 @@ export const useSubredditStore = create<SubredditState>()(
         set({ currentSubreddit: subreddit });
       },
       availableSubreddits: [],
-      setAvailableSubreddits: (subreddits) => set({ availableSubreddits: subreddits }),
+      setAvailableSubreddits: (subreddits: UserSubreddit[]) => 
+        set({ availableSubreddits: subreddits }),
     }),
     {
       name: 'subreddit-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ currentSubreddit: state.currentSubreddit }),
+      partialize: (state) => ({
+        currentSubreddit: state.currentSubreddit,
+        availableSubreddits: state.availableSubreddits,
+      }),
     }
   )
 );

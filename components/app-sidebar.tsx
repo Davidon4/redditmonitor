@@ -53,6 +53,7 @@ export function AppSidebar() {
   const userImage = session?.user?.image;
   const pathname = usePathname();
   const availableSubreddits = useSubredditStore((state) => state.availableSubreddits);
+  console.log("Available Subreddits=>", availableSubreddits);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
 

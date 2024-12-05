@@ -34,6 +34,7 @@ export default function EmotionChart() {
   const [nextUpdate, setNextUpdate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const {currentSubreddit} = useSubredditStore();
+  console.log("Current Subreddit=>", currentSubreddit);
 
   useEffect(() => {
     async function fetchAndAnalyzeEmotions() {

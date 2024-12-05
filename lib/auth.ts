@@ -11,9 +11,23 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: '/signin',
+    error: '/',
+  },
   callbacks: {
-    async redirect({ baseUrl }: {baseUrl: string}) {
-      // Always redirect to /home after sign in
+    async redirect({ url, baseUrl }) {
+
+      if (url.includes('error=access_denied') || 
+          url.includes('error=Callback') ||
+          url.includes('error=OAuthSignin')) {
+        return baseUrl; // Redirect to home page
+      }
+
+      // Default successful authentication redirect
+      if (url.startsWith(baseUrl)) {
+        return `${baseUrl}/home`;
+        }
       return `${baseUrl}/home`;
     },
     async session({ session, token }: {session: Session, token: JWT}) {
@@ -60,10 +74,6 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-  },
-  pages: {
-    signIn: '/auth/signIn',
-    error: '/auth/error',
   },
   session: {
     strategy: 'jwt' as const,

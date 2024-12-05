@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import prismadb from '@/lib/reddit';
+import prismadb from '@/lib/prismadb';
 import reddit from '@/lib/reddit';
 
 // Run every 5 minutes

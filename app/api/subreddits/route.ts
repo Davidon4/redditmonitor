@@ -27,9 +27,20 @@ reddit.config({
   retryErrorCodes: [502, 503, 504, 522]
 });
 
+
+const CACHE_DURATION = 1000 * 60 * 5;
+const searchCache = new Map();
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get('keyword')?.toLowerCase();
+
+  const cacheKey = `search_${keyword}`;
+  const cachedResults = searchCache.get(cacheKey);
+
+  if (cachedResults && Date.now()- cachedResults.timestamp < CACHE_DURATION) {
+    return NextResponse.json(cachedResults.data)
+  }
 
   if (!keyword) {
     return NextResponse.json({ error: 'Keyword is required' }, { status: 400 });
@@ -120,6 +131,11 @@ export async function GET(request: Request) {
         return scoreB - scoreA;
       })
       .slice(0, 10);
+    
+      searchCache.set(cacheKey, {
+        timestamp: Date.now(),
+        data: filteredSubreddits
+      });
 
     return NextResponse.json(filteredSubreddits);
     

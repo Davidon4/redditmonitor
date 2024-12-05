@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import { useSubredditStore } from '@/lib/store/subreddit';
+import debounce from "lodash/debounce";
 
 interface Subreddit {
   id: string;
@@ -30,13 +31,23 @@ export default function WelcomePage() {
       router.push('/');
     },
   })
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(false);
 
-  const handleSearch = async () => {
-    if (!keyword.trim()) return;
+  const debouncedSearch = useCallback(
+    debounce((searchTerm: string) => {
+      handleSearch(searchTerm)
+    }, 500),
+    []
+  )
+
+  const handleSearch = async (searchTerm?: string) => {
+    if (!searchTerm?.trim() && !keyword.trim()) return;
     
     setIsLoading(true);
+    setIsInitialLoad(false);
     try {
-      const response = await fetch(`/api/subreddits?keyword=${keyword}`);
+      const response = await fetch(`/api/subreddits?keyword=${searchTerm || keyword}`);
       const data = await response.json();
       setSubreddits(data);
     } catch (error) {
@@ -52,7 +63,7 @@ export default function WelcomePage() {
       return;
     }
   
-    setIsLoading(true);
+    setIsDashboardLoading(true);
     const selectedSubredditData = subreddits.filter(sub => 
       selectedSubreddits.includes(sub.id)
     );
@@ -96,7 +107,7 @@ export default function WelcomePage() {
       console.error('Error completing onboarding:', error);
       setError(error instanceof Error ? error.message : 'Failed to complete onboarding');
     } finally {
-      setIsLoading(false);
+      setIsDashboardLoading(false);
     }
   };
 
@@ -138,12 +149,14 @@ export default function WelcomePage() {
               type="text"
               placeholder="Enter keywords (e.g., software, fitness, technology)"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                setKeyword(e.target.value)
+              }}
               className="flex-1"
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
             <Button 
-              onClick={handleSearch}
+              onClick={() => handleSearch()}
               className="bg-purple-700 hover:bg-purple-800"
               disabled={isLoading}
             >
@@ -159,10 +172,11 @@ export default function WelcomePage() {
           {error}
         </div>
       )}
-            {isLoading ? (
+            {isLoading && !isInitialLoad ? (
               <div className="text-center flex flex-col items-center py-8">
                 <Loader2 className="w-14 h-14 md:w-20 md:h-20 animate-spin text-purple-700" />
                 <p className="text-gray-600 mt-4">Searching subreddits...</p>
+                <p className="text-sm text-gray-500 mt-2">This might take a few seconds...</p>
               </div>
             ) : subreddits.length > 0 ? (
               <>
@@ -198,9 +212,16 @@ export default function WelcomePage() {
                     <Button
                       onClick={handleComplete}
                       className="bg-purple-700 hover:bg-purple-800"
-                      disabled={isLoading}
+                      disabled={isDashboardLoading}
                     >
-                  Continue to Dashboard
+                      {isDashboardLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Redirecting...
+                        </>
+                      ) : (
+                        'Continue to Dashboard'
+                      )}
                     </Button>
                   </div>
                 )}

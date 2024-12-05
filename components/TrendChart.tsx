@@ -1,16 +1,13 @@
 "use client";
 import {useState, useEffect} from "react";
 import dynamic from "next/dynamic";
-import { MessageSquare, ListFilter, ThumbsUp, Sparkles, Tag, TrendingUp, Loader2 } from "lucide-react";
+import { MessageSquare, ListFilter, AlertCircle, ThumbsUp, Sparkles, Tag, TrendingUp, Loader2 } from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 import {motion, AnimatePresence} from "framer-motion";
 import {cn, formatNumber} from "@/lib/utils";
 import { useSession } from "next-auth/react";
-
-interface TrendChartProps {
-    subreddit: string;
-  }
+import { useSubredditStore } from "@/lib/store/subreddit";
 
   interface UserSubreddit {
     subreddit: {
@@ -40,15 +37,16 @@ interface TrendChartProps {
   };
 
   const Chart = dynamic(() => import('./Chart'), { ssr: false });
-  export default function TrendChart({ subreddit }: TrendChartProps) {
+  export default function TrendChart() {
   const [topPosts, setTopPosts] = useState<TopPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<TopPost | null>(null);
   const [postAnalysis, setPostAnalysis] = useState<PostAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [chartWidth, setChartWidth] = useState(1000);
   const [isListOpen, setIsListOpen] = useState(false);
-  const [currentSubreddit, setCurrentSubreddit] = useState<string>(subreddit);
-  const [availableSubreddits, setAvailableSubreddits] = useState<string[]>([subreddit]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { setAvailableSubreddits, setCurrentSubreddit, currentSubreddit } = useSubredditStore();
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -94,43 +92,39 @@ interface TrendChartProps {
   useEffect(() => {
     async function fetchUserSubreddits() {
       try {
+        setIsLoading(true);
         const response = await fetch('/api/user/subreddits', {
           credentials: 'include'
         });
-        
-        if (!response.ok) throw new Error('Failed to fetch subreddits');
-        
         const data = await response.json();
-        if (data.subreddits.length > 0) {
-          const subredditNames = data.subreddits.map(
-            (sub: UserSubreddit) => sub.subreddit.name
-          );
-  
-          setAvailableSubreddits(subredditNames);
-          setCurrentSubreddit(subredditNames[0]);
-        } else {
-          setAvailableSubreddits([subreddit]);
-          setCurrentSubreddit(subreddit);
+        
+        // Update both local state and store
+        setAvailableSubreddits(data.subreddits);
+        
+        // Set first subreddit as current if none selected
+        if (!currentSubreddit && data.subreddits.length > 0) {
+          setCurrentSubreddit(data.subreddits[0].subreddit.name);
         }
       } catch (error) {
         console.error('Error fetching user subreddits:', error);
-        setAvailableSubreddits([subreddit]);
-        setCurrentSubreddit(subreddit);
+        setError('Failed to fetch subreddits');
+      } finally {
+        setIsLoading(false);
       }
     }
   
     if (session?.user) {
       fetchUserSubreddits();
     } else {
-      setAvailableSubreddits([subreddit]);
-      setCurrentSubreddit(subreddit);
+      setAvailableSubreddits([]);
+      setCurrentSubreddit("");
     }
-  }, [session, subreddit]);
+  }, [session, currentSubreddit, setAvailableSubreddits, setCurrentSubreddit]);
 
   useEffect(() => {
     async function fetchTopPosts() {
       try {
-        const response = await fetch(`/api/trending?subreddit=${subreddit}`);
+        const response = await fetch(`/api/trending?subreddit=${currentSubreddit}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
         setTopPosts(data);
@@ -148,7 +142,7 @@ interface TrendChartProps {
     fetchTopPosts();
     const interval = setInterval(fetchTopPosts, 24 * 60 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [subreddit, selectedPost]);
+  }, [currentSubreddit, selectedPost]);
 
   const formatPostTime = (timestamp: number) => {
     const date = new Date(timestamp); // Convert Unix timestamp to milliseconds
@@ -163,6 +157,28 @@ interface TrendChartProps {
     };
     return new Intl.DateTimeFormat('en-US', options).format(date);
   }; 
+
+  if (isLoading) {
+    return(
+      <div className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center bg-white/80">
+        <Loader2 className="w-16 h-16 md:w-20 md:h-20 animate-spin text-purple-700" />
+    </div>
+    )
+  }
+
+  if (error) {
+    return (
+        <div className="min-h-[600px] flex flex-col items-center justify-center space-y-4 bg-white rounded-lg shadow-sm p-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+            <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900">Failed to load data</h3>
+            </div>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+                Try again
+            </Button>
+        </div>
+    )
+  }
 
   return (
       <div className="w-full bg-white rounded-lg shadow-sm p-3 md:p-6">
