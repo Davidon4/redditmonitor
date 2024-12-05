@@ -2,13 +2,12 @@
   "name": "reddimon",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "cron": "node --loader ts-node/esm scripts/cron.ts",
+    "cron": "ts-node --project tsconfig.cron.json scripts/cron.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

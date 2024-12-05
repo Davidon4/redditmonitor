@@ -1,6 +1,6 @@
-import cron from 'node-cron';
-import prismadb from '../lib/prismadb';
-import reddit from '../lib/reddit';
+const cron = require('node-cron');
+const prismadb = require('../lib/prismadb').default;
+const reddit = require('../lib/reddit').default;
 
 interface SubredditData {
   subreddit: {
