@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const { prismadb } = require('@/lib/prismadb');
-const reddit = require('@/lib/reddit');
+const { prismadb } = require('../lib/prismadb');
+const reddit = require('../lib/reddit');
 
 interface SubredditData {
   subreddit: {
