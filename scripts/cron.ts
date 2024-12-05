@@ -1,12 +1,24 @@
-import cron from 'node-cron';
-import prismadb from '@/lib/prismadb';
-import reddit from '@/lib/reddit';
+const cron = require('node-cron');
+const { prismadb } = require('@/lib/prismadb');
+const reddit = require('@/lib/reddit');
 
-export async function startCronJob() {
+interface SubredditData {
+  subreddit: {
+    name: string;
+  }
+}
+
+interface RedditMetrics {
+  activeUsers: number;
+  subscribers: number;
+  commentCounts: number;
+  upvotes: number;
+}
+
+async function startCronJob() {
   console.log('Starting cron job...');
   
   try {
-    // Cleanup old metrics before starting
     await cleanupOldMetrics();
     
     cron.schedule('*/5 * * * *', async () => {
@@ -22,7 +34,7 @@ export async function startCronJob() {
         console.log(`Processing ${subreddits.length} subreddits`);
         
         await Promise.allSettled(
-          subreddits.map(async (sub) => {
+          subreddits.map(async (sub: SubredditData) => {
             try {
               const metrics = await reddit.getSubredditInfo(sub.subreddit.name, now);
               await prismadb.subredditMetrics.create({
@@ -66,3 +78,5 @@ async function cleanupOldMetrics() {
     console.error('Failed to cleanup old metrics:', error);
   }
 }
+
+startCronJob();
