@@ -18,8 +18,7 @@ export const metadata: Metadata = {
   },
   description: "Reddimon is a tool that allows you to monitor subreddits and get insights into their activity.",
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-icon.png',
+    icon: '/reddimon.png'
   },
 };
 

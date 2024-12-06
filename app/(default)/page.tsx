@@ -11,7 +11,11 @@ import LandingPagePricing from "@/components/LandingPagePricing";
 
 export const metadata = {
   title: "Reddimon - AI-Powered Reddit Analytics",
-  description: "Transform your Reddit community growth with AI-powered analytics and insights."
+  description: "Reddimon is a tool that allows you to monitor subreddits and get insights into their activity.",
+  icons: {
+    icon: '/reddimon.png',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default async function LandingPage() {
