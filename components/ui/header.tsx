@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Bot } from 'lucide-react';
 import {signIn} from "next-auth/react";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import Logo from '../Logo';
+
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -35,7 +35,9 @@ const Header = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
-            <Logo />
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+            <Bot className="w-6 h-6 text-white" />
+          </div>
             <span className="text-xl font-bold bg-purple-700 bg-clip-text text-transparent">
               Reddimon
             </span>

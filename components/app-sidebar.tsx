@@ -139,10 +139,9 @@ const SupportDialog = ({ isOpen, onClose }: SupportDialogProps) => {
     <Sidebar className="border-r border-gray-200 bg-white">
       <SidebarHeader className="border-b border-gray-200 py-4">
         <div className="flex items-center space-x-3 px-6">
-          {/* <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
             <Bot className="w-6 h-6 text-white" />
-          </div> */}
-          <Logo/>
+          </div>
           <span className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-purple-500 bg-clip-text text-transparent">
             Reddimon
           </span>
